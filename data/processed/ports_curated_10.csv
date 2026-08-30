@@ -1,0 +1,11 @@
+unlocode,port_name,country_code,latitude,longitude,default_destination_airport,default_transfer_minutes,transfer_risk_note,source_url,source_retrieved_date
+DEHAM,Hamburg,DE,53.516667,9.933333,HAM,45,Urban airport-to-port transfer; allow additional time for traffic and terminal access.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+DEBRV,Bremerhaven,DE,53.533333,8.6,BRE,75,Intercity transfer from Bremen Airport to Bremerhaven; road conditions may affect timing.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+NLRTM,Rotterdam,NL,51.916667,4.5,AMS,75,Long airport-to-port transfer; terminal location and congestion should be confirmed.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+BEANR,Antwerpen,BE,51.216667,4.416667,BRU,50,Cross-city road transfer; terminal and port-agent arrangements should be confirmed.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+DKCPH,København,DK,55.666667,12.583333,CPH,30,Relatively short transfer; allow additional time for terminal access.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+NOOSL,Oslo,NO,59.9,10.733333,OSL,50,Airport is outside the city; allow additional time for onward port transfer.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+GRPIR,Piraeus,GR,37.933333,23.616667,ATH,60,Metropolitan transfer to Piraeus; traffic can materially change journey time.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+CYLMS,Limassol,CY,34.683333,33.05,LCA,50,Intercity road transfer; confirm driver and vessel terminal before arrival.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+SGSIN,Singapore,SG,1.283333,103.85,SIN,35,Transfer time depends on assigned terminal and port security procedures.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
+AEDXB,Dubai,AE,25.25,55.266667,DXB,45,Transfer depends on the assigned Dubai terminal; verify exact port location.,https://unece.org/trade/cefact/UNLOCODE-Download,2026-08-30
