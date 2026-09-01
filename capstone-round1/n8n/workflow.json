@@ -1,1 +1,2301 @@
-{"nodes": [], "connections": [], "settings": {}}
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        16
+      ],
+      "id": "40ab4d84-c16e-439e-abd9-7e4b1afb97cd",
+      "name": "Run Crew Change Analysis"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appLCfLzhk3hA9NPy",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWIKzwBjgFWvQdB",
+          "mode": "list",
+          "cachedResultName": "Crew Change Plans",
+          "cachedResultUrl": "https://airtable.com/appLCfLzhk3hA9NPy/tblWIKzwBjgFWvQdB"
+        },
+        "filterByFormula": "{crew_change_id} = 'CC-0005'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -496,
+        16
+      ],
+      "id": "6d394ad5-9fc2-43a1-bdf0-5d22faa52a09",
+      "name": "Crew Change Node",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Q5WIJaIStPsdNnBz",
+          "name": "Andreas_Crew Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appLCfLzhk3hA9NPy",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblW7F4Ra7qXI2elH",
+          "mode": "list",
+          "cachedResultName": "Airports",
+          "cachedResultUrl": "https://airtable.com/appLCfLzhk3hA9NPy/tblW7F4Ra7qXI2elH"
+        },
+        "id": "={{ $json.fields.destination_airport[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -304,
+        16
+      ],
+      "id": "d2ee017a-1bba-4904-bba8-b2c7ae5f17db",
+      "name": "Airport Node",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Q5WIJaIStPsdNnBz",
+          "name": "Andreas_Crew Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.fields.latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.fields.longitude }}"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -96,
+        16
+      ],
+      "id": "c6edcb6c-a472-47c7-bacd-32ae7b962c3c",
+      "name": "Weather Node open-meteo"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "95152786-f266-4664-9556-4d7759739ec9",
+              "name": "crew_change_id",
+              "value": "={{ $('Crew Change Node').item.json.fields.crew_change_id }}",
+              "type": "string"
+            },
+            {
+              "id": "409bff4c-0dc5-4e04-8f09-972042365439",
+              "name": "rank",
+              "value": "={{ $('Crew Change Node').item.json.fields.rank }}",
+              "type": "string"
+            },
+            {
+              "id": "75d610f4-2956-48bd-8d9f-81388b793b6e",
+              "name": "risk_score_original",
+              "value": "={{ $('Crew Change Node').item.json.fields.risk_score }}",
+              "type": "number"
+            },
+            {
+              "id": "7b8596d9-ecd4-4fa6-b860-0d281dab22ed",
+              "name": "airport_delay_risk",
+              "value": "={{ $('Crew Change Node').item.json.fields.airport_delay_risk }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6defbb-e842-47ab-afe8-2e4c22b9e5c7",
+              "name": "weather_risk_original",
+              "value": "={{ $('Crew Change Node').item.json.fields.weather_risk }}",
+              "type": "string"
+            },
+            {
+              "id": "223d7aac-0ca0-4acb-af55-3da4aabd3eba",
+              "name": "risk_level_original",
+              "value": "={{ $('Crew Change Node').item.json.fields.risk_level }}",
+              "type": "string"
+            },
+            {
+              "id": "8c42c866-32d9-4ef4-89ca-61f1069340f5",
+              "name": "route_complexity",
+              "value": "={{ $('Crew Change Node').item.json.fields.route_complexity }}",
+              "type": "string"
+            },
+            {
+              "id": "a9ad9628-5f80-4651-8641-5b7fc6a37109",
+              "name": "shortest_connection_minutes",
+              "value": "={{ $('Crew Change Node').item.json.fields.shortest_connection_minutes }}",
+              "type": "number"
+            },
+            {
+              "id": "2d0e02cb-79ab-4849-b5a0-97ae0275c24a",
+              "name": "arrival_buffer_minutes",
+              "value": "={{ $('Crew Change Node').item.json.fields.arrival_buffer_minutes }}",
+              "type": "number"
+            },
+            {
+              "id": "58a55f0a-c1d0-471f-9339-83b9d7144a78",
+              "name": "visa_status",
+              "value": "={{ $('Crew Change Node').item.json.fields.visa_status }}",
+              "type": "string"
+            },
+            {
+              "id": "7f7669df-bebc-44c3-b5fd-27e1577c7862",
+              "name": "ticket_status",
+              "value": "={{ $('Crew Change Node').item.json.fields.ticket_status }}",
+              "type": "string"
+            },
+            {
+              "id": "6f697374-94b8-4647-8beb-265be8ce7678",
+              "name": "destination_airport",
+              "value": "={{ $('Airport Node').item.json.fields.iata_code }}",
+              "type": "string"
+            },
+            {
+              "id": "194ebb47-ce88-4273-b4f0-940095888b6c",
+              "name": "destination_airport_name",
+              "value": "={{ $('Airport Node').item.json.fields.airport_name }}",
+              "type": "string"
+            },
+            {
+              "id": "461ac5f5-92ad-4c66-8d9f-0a529f1b16cd",
+              "name": "destination_city",
+              "value": "={{ $('Airport Node').item.json.fields.municipality }}",
+              "type": "string"
+            },
+            {
+              "id": "4fe6f933-12e0-4a19-a937-ce31acc6649e",
+              "name": "temperature_c",
+              "value": "={{ $json.current.temperature_2m }}",
+              "type": "number"
+            },
+            {
+              "id": "c539ab63-d479-432d-a88b-3c742305a675",
+              "name": "precipitation_mm",
+              "value": "={{ $json.current.precipitation }}",
+              "type": "number"
+            },
+            {
+              "id": "5da80b08-c7e3-4003-a1ac-6e350e311a71",
+              "name": "weather_code",
+              "value": "={{ $json.current.weather_code }}",
+              "type": "number"
+            },
+            {
+              "id": "94bb40b2-ad4f-4191-ac08-5620e010a24c",
+              "name": "wind_speed_kmh",
+              "value": "={{ $json.current.wind_speed_10m }}",
+              "type": "number"
+            },
+            {
+              "id": "cdbc2004-4794-424e-a4f6-ddec14a69780",
+              "name": "weather_observed_at",
+              "value": "={{ $json.current.time }}",
+              "type": "string"
+            },
+            {
+              "id": "e5439c94-248a-4e43-9ecc-802f9487ddc8",
+              "name": "wind_gusts_kmh",
+              "value": "={{ $json.current.wind_gusts_10m }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        16
+      ],
+      "id": "59c2779f-827d-450b-9eb4-b2fa308c630e",
+      "name": "Build Risk Assessment Input"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "pythonNative",
+        "pythonCode": "# Get the input data from the previous node\ndata = _item[\"json\"]\n\n# Start the risk score at zero\nrisk_score = 0\n\n# Create an empty list to store the reasons for the score\nrisk_reasons = []\n\n\n# -----------------------------\n# 1. DOCUMENTATION READINESS\n# -----------------------------\n\n# Add risk points if the visa still requires verification\nif data.get(\"visa_status\") == \"Pending verification\":\n    risk_score += 25\n    risk_reasons.append(\"Visa status pending verification (+25)\")\n\n# Add risk points if the ticket is quoted but not yet confirmed\nif data.get(\"ticket_status\") == \"Quoted\":\n    risk_score += 10\n    risk_reasons.append(\"Ticket status is quoted but not confirmed (+10)\")\n\n\n# -----------------------------\n# 2. CONNECTION RISK\n# -----------------------------\n\nconnection_minutes = data.get(\"shortest_connection_minutes\", 0)\n\nif connection_minutes < 90:\n    risk_score += 20\n    risk_reasons.append(\"Shortest connection below 90 minutes (+20)\")\n\nelif connection_minutes <= 120:\n    risk_score += 10\n    risk_reasons.append(\"Shortest connection between 90 and 120 minutes (+10)\")\n\n\n# -----------------------------\n# 3. ARRIVAL BUFFER RISK\n# -----------------------------\n\narrival_buffer = data.get(\"arrival_buffer_minutes\", 0)\n\nif arrival_buffer < 240:\n    risk_score += 20\n    risk_reasons.append(\"Arrival buffer below 4 hours (+20)\")\n\nelif arrival_buffer <= 360:\n    risk_score += 10\n    risk_reasons.append(\"Arrival buffer between 4 and 6 hours (+10)\")\n\n\n# -----------------------------\n# 4. LIVE WEATHER RISK\n# -----------------------------\n\nprecipitation = data.get(\"precipitation_mm\", 0)\nwind_speed = data.get(\"wind_speed_kmh\", 0)\nwind_gusts = data.get(\"wind_gusts_kmh\", 0)\nweather_code = data.get(\"weather_code\", 0)\n\n# Heavy precipitation\nif precipitation > 5:\n    risk_score += 15\n    risk_reasons.append(\"Heavy precipitation detected (+15)\")\n\n# High wind conditions\nif wind_speed > 50 or wind_gusts > 70:\n    risk_score += 15\n    risk_reasons.append(\"High wind conditions detected (+15)\")\n\n# Severe weather conditions\nif weather_code >= 95:\n    risk_score += 20\n    risk_reasons.append(\"Severe weather conditions detected (+20)\")\n\n\n# -----------------------------\n# 5. RISK CLASSIFICATION\n# -----------------------------\n\nif risk_score >= 50:\n    risk_level = \"High\"\nelif risk_score >= 25:\n    risk_level = \"Medium\"\nelse:\n    risk_level = \"Low\"\n\n\n# -----------------------------\n# 6. WEATHER SUMMARY\n# -----------------------------\n\nweather_summary = (\n    f\"Temperature: {data.get('temperature_c')}°C, \"\n    f\"Precipitation: {precipitation} mm, \"\n    f\"Wind: {wind_speed} km/h, \"\n    f\"Wind gusts: {wind_gusts} km/h, \"\n    f\"WMO weather code: {weather_code}\"\n)\n\n\n# -----------------------------\n# 7. ADD RESULTS TO THE DATA\n# -----------------------------\n\ndata[\"live_operational_risk_score\"] = risk_score\ndata[\"live_operational_risk_level\"] = risk_level\ndata[\"live_risk_reasons\"] = \"; \".join(risk_reasons)\ndata[\"live_weather_summary\"] = weather_summary\n\n# Return the enriched item to the next node\nreturn {\"json\": data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        16
+      ],
+      "id": "68230fc3-8b4f-4b35-b42a-7e172ffcd33e",
+      "name": "Calculate Live Operational Risk"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appLCfLzhk3hA9NPy",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWIKzwBjgFWvQdB",
+          "mode": "list",
+          "cachedResultName": "Crew Change Plans",
+          "cachedResultUrl": "https://airtable.com/appLCfLzhk3hA9NPy/tblWIKzwBjgFWvQdB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Crew Change Node').item.json.id }}",
+            "live_operational_risk_score": "={{ $json.live_operational_risk_score }}",
+            "live_operational_risk_level": "={{ $json.live_operational_risk_level }}",
+            "live_risk_reasons": "={{ $json.live_risk_reasons }}",
+            "live_weather_summary": "={{ $json.live_weather_summary }}",
+            "risk_assessed_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "crew_change_id",
+              "displayName": "crew_change_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "plan_created_date",
+              "displayName": "plan_created_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_code",
+              "displayName": "vessel_code",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "seafarer_id",
+              "displayName": "seafarer_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "rank",
+              "displayName": "rank",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Master",
+                  "value": "Master"
+                },
+                {
+                  "name": "Chief Officer",
+                  "value": "Chief Officer"
+                },
+                {
+                  "name": "Second Officer",
+                  "value": "Second Officer"
+                },
+                {
+                  "name": "Chief Engineer",
+                  "value": "Chief Engineer"
+                },
+                {
+                  "name": "Second Engineer",
+                  "value": "Second Engineer"
+                },
+                {
+                  "name": "Third Engineer",
+                  "value": "Third Engineer"
+                },
+                {
+                  "name": "Electrician",
+                  "value": "Electrician"
+                },
+                {
+                  "name": "Bosun",
+                  "value": "Bosun"
+                },
+                {
+                  "name": "Able Seafarer",
+                  "value": "Able Seafarer"
+                },
+                {
+                  "name": "Cook",
+                  "value": "Cook"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "movement_type",
+              "displayName": "movement_type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Joining",
+                  "value": "Joining"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "origin_airport",
+              "displayName": "origin_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "connection_airport",
+              "displayName": "connection_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "destination_airport",
+              "displayName": "destination_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "number_of_connections",
+              "displayName": "number_of_connections",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "shortest_connection_minutes",
+              "displayName": "shortest_connection_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scheduled_departure",
+              "displayName": "scheduled_departure",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scheduled_arrival",
+              "displayName": "scheduled_arrival",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estimated_travel_cost_eur",
+              "displayName": "estimated_travel_cost_eur",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "joining_port",
+              "displayName": "joining_port",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_eta",
+              "displayName": "vessel_eta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "reporting_deadline",
+              "displayName": "reporting_deadline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "port_transfer_minutes",
+              "displayName": "port_transfer_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "port_agent_confirmed",
+              "displayName": "port_agent_confirmed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_eta_confidence",
+              "displayName": "vessel_eta_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "passport_country_code",
+              "displayName": "passport_country_code",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "passport_valid",
+              "displayName": "passport_valid",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "visa_status",
+              "displayName": "visa_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Verified",
+                  "value": "Verified"
+                },
+                {
+                  "name": "Pending verification",
+                  "value": "Pending verification"
+                },
+                {
+                  "name": "Manual specialist check",
+                  "value": "Manual specialist check"
+                },
+                {
+                  "name": "Potential issue",
+                  "value": "Potential issue"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "medical_valid",
+              "displayName": "medical_valid",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "documents_verified",
+              "displayName": "documents_verified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ticket_status",
+              "displayName": "ticket_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not requested",
+                  "value": "Not requested"
+                },
+                {
+                  "name": "Quoted",
+                  "value": "Quoted"
+                },
+                {
+                  "name": "Reserved",
+                  "value": "Reserved"
+                },
+                {
+                  "name": "Ticketed",
+                  "value": "Ticketed"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "airport_delay_risk",
+              "displayName": "airport_delay_risk",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "weather_risk",
+              "displayName": "weather_risk",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "route_complexity",
+              "displayName": "route_complexity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "arrival_buffer_minutes",
+              "displayName": "arrival_buffer_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_score",
+              "displayName": "risk_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_level",
+              "displayName": "risk_level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_reasons",
+              "displayName": "risk_reasons",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ai_risk_briefing",
+              "displayName": "ai_risk_briefing",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "human_review_status",
+              "displayName": "human_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not reviewed",
+                  "value": "Not reviewed"
+                },
+                {
+                  "name": "Reviewing",
+                  "value": "Reviewing"
+                },
+                {
+                  "name": "Accepted",
+                  "value": "Accepted"
+                },
+                {
+                  "name": "Override",
+                  "value": "Override"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "actual_outcome",
+              "displayName": "actual_outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "On time",
+                  "value": "On time"
+                },
+                {
+                  "name": "Delayed but completed",
+                  "value": "Delayed but completed"
+                },
+                {
+                  "name": "Rebooked",
+                  "value": "Rebooked"
+                },
+                {
+                  "name": "Failed crew change",
+                  "value": "Failed crew change"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "actual_delay_minutes",
+              "displayName": "actual_delay_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "crew_change_completed",
+              "displayName": "crew_change_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "additional_cost_eur",
+              "displayName": "additional_cost_eur",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "outcome_reason",
+              "displayName": "outcome_reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "No disruption",
+                  "value": "No disruption"
+                },
+                {
+                  "name": "Flight delay",
+                  "value": "Flight delay"
+                },
+                {
+                  "name": "Flight cancellation",
+                  "value": "Flight cancellation"
+                },
+                {
+                  "name": "Missed connection",
+                  "value": "Missed connection"
+                },
+                {
+                  "name": "Document issue",
+                  "value": "Document issue"
+                },
+                {
+                  "name": "Vessel ETA change",
+                  "value": "Vessel ETA change"
+                },
+                {
+                  "name": "Port transfer issue",
+                  "value": "Port transfer issue"
+                },
+                {
+                  "name": "Severe weather",
+                  "value": "Severe weather"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "destination_delay_risk_public",
+              "displayName": "destination_delay_risk_public",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "destination_delay_minutes_public",
+              "displayName": "destination_delay_minutes_public",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "live_operational_risk_score",
+              "displayName": "live_operational_risk_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "live_operational_risk_level",
+              "displayName": "live_operational_risk_level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "live_risk_reasons",
+              "displayName": "live_risk_reasons",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "live_weather_summary",
+              "displayName": "live_weather_summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "risk_assessed_at",
+              "displayName": "risk_assessed_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assessment_status",
+              "displayName": "assessment_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "notion_report_url",
+              "displayName": "notion_report_url",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        656
+      ],
+      "id": "45b3d61a-0d33-41b0-abec-bd7b7f814be6",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Q5WIJaIStPsdNnBz",
+          "name": "Andreas_Crew Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI Operational Risk Analyst supporting maritime crew change operations.\n\nYour role is to interpret the provided operational risk assessment and provide concise decision support for a human operations manager.\n\nIMPORTANT RULES:\n\n1. Do NOT recalculate or modify the deterministic risk score.\n2. Do NOT contradict the provided risk level.\n3. Base your assessment only on the operational data provided.\n4. Do NOT invent missing information.\n5. Clearly distinguish facts from recommendations.\n6. Consider documentation, ticket status, connection constraints, arrival buffer and live weather conditions where relevant.\n7. Provide practical and actionable recommendations.\n8. If the risk level is High, recommend human review.\n9. Keep the assessment concise and suitable for operational decision-making.\n\nAnalyse the following crew change:\n\nCREW CHANGE ID:\n{{ $json.fields.crew_change_id }}\n\nLIVE OPERATIONAL RISK SCORE:\n{{ $json.fields.live_operational_risk_score }}\n\nLIVE OPERATIONAL RISK LEVEL:\n{{ $json.fields.live_operational_risk_level }}\n\nDETERMINISTIC RISK DRIVERS:\n{{ $json.fields.live_risk_reasons }}\n\nVISA STATUS:\n{{ $json.fields.visa_status }}\n\nTICKET STATUS:\n{{ $json.fields.ticket_status }}\n\nROUTE COMPLEXITY:\n{{ $json.fields.route_complexity }}\n\nSHORTEST CONNECTION:\n{{ $json.fields.shortest_connection_minutes }} minutes\n\nARRIVAL BUFFER:\n{{ $json.fields.arrival_buffer_minutes }} minutes\n\nLIVE WEATHER CONDITIONS:\n{{ $json.fields.live_weather_summary }}\n\nProvide the assessment using the required structured output format.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -496,
+        352
+      ],
+      "id": "9e53d9aa-b864-4508-bf01-8ffbe9daaacd",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        512
+      ],
+      "id": "1a535653-1394-4177-9d02-718ab43cb25e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1K3OwDmQWVfzLCyD",
+          "name": "Andreas OpenAi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"executive_assessment\": \"Brief operational summary of the overall risk situation\",\n  \"key_risk_drivers\": [\n    \"First key risk driver\",\n    \"Second key risk driver\"\n  ],\n  \"recommended_actions\": [\n    \"First recommended action\",\n    \"Second recommended action\",\n    \"Third recommended action\"\n  ],\n  \"ai_recommendation\": \"Human review required\",\n  \"recommendation_rationale\": \"Brief explanation of why this recommendation was made\",\n  \"assessment_limitation\": \"Assessment is based solely on the available operational data\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        512
+      ],
+      "id": "78a71ecf-5777-4e74-878c-e825e4349818",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appLCfLzhk3hA9NPy",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWIKzwBjgFWvQdB",
+          "mode": "list",
+          "cachedResultName": "Crew Change Plans",
+          "cachedResultUrl": "https://airtable.com/appLCfLzhk3hA9NPy/tblWIKzwBjgFWvQdB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Update record').item.json.id }}",
+            "ai_risk_briefing": "={{ $json.ai_risk_briefing }}",
+            "ai_recommendation": "={{ $json.ai_recommendation }}",
+            "ai_recommendation_rationale": "={{ $json.ai_recommendation_rationale }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "crew_change_id",
+              "displayName": "crew_change_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "plan_created_date",
+              "displayName": "plan_created_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_code",
+              "displayName": "vessel_code",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "seafarer_id",
+              "displayName": "seafarer_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "rank",
+              "displayName": "rank",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Master",
+                  "value": "Master"
+                },
+                {
+                  "name": "Chief Officer",
+                  "value": "Chief Officer"
+                },
+                {
+                  "name": "Second Officer",
+                  "value": "Second Officer"
+                },
+                {
+                  "name": "Chief Engineer",
+                  "value": "Chief Engineer"
+                },
+                {
+                  "name": "Second Engineer",
+                  "value": "Second Engineer"
+                },
+                {
+                  "name": "Third Engineer",
+                  "value": "Third Engineer"
+                },
+                {
+                  "name": "Electrician",
+                  "value": "Electrician"
+                },
+                {
+                  "name": "Bosun",
+                  "value": "Bosun"
+                },
+                {
+                  "name": "Able Seafarer",
+                  "value": "Able Seafarer"
+                },
+                {
+                  "name": "Cook",
+                  "value": "Cook"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "movement_type",
+              "displayName": "movement_type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Joining",
+                  "value": "Joining"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "origin_airport",
+              "displayName": "origin_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "connection_airport",
+              "displayName": "connection_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "destination_airport",
+              "displayName": "destination_airport",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "number_of_connections",
+              "displayName": "number_of_connections",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "shortest_connection_minutes",
+              "displayName": "shortest_connection_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scheduled_departure",
+              "displayName": "scheduled_departure",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scheduled_arrival",
+              "displayName": "scheduled_arrival",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estimated_travel_cost_eur",
+              "displayName": "estimated_travel_cost_eur",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "joining_port",
+              "displayName": "joining_port",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_eta",
+              "displayName": "vessel_eta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "reporting_deadline",
+              "displayName": "reporting_deadline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "port_transfer_minutes",
+              "displayName": "port_transfer_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "port_agent_confirmed",
+              "displayName": "port_agent_confirmed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_eta_confidence",
+              "displayName": "vessel_eta_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "passport_country_code",
+              "displayName": "passport_country_code",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "passport_valid",
+              "displayName": "passport_valid",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "visa_status",
+              "displayName": "visa_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Verified",
+                  "value": "Verified"
+                },
+                {
+                  "name": "Pending verification",
+                  "value": "Pending verification"
+                },
+                {
+                  "name": "Manual specialist check",
+                  "value": "Manual specialist check"
+                },
+                {
+                  "name": "Potential issue",
+                  "value": "Potential issue"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "medical_valid",
+              "displayName": "medical_valid",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "documents_verified",
+              "displayName": "documents_verified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ticket_status",
+              "displayName": "ticket_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not requested",
+                  "value": "Not requested"
+                },
+                {
+                  "name": "Quoted",
+                  "value": "Quoted"
+                },
+                {
+                  "name": "Reserved",
+                  "value": "Reserved"
+                },
+                {
+                  "name": "Ticketed",
+                  "value": "Ticketed"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "airport_delay_risk",
+              "displayName": "airport_delay_risk",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "weather_risk",
+              "displayName": "weather_risk",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "route_complexity",
+              "displayName": "route_complexity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "arrival_buffer_minutes",
+              "displayName": "arrival_buffer_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_score",
+              "displayName": "risk_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_level",
+              "displayName": "risk_level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_reasons",
+              "displayName": "risk_reasons",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ai_risk_briefing",
+              "displayName": "ai_risk_briefing",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "human_review_status",
+              "displayName": "human_review_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not reviewed",
+                  "value": "Not reviewed"
+                },
+                {
+                  "name": "Reviewing",
+                  "value": "Reviewing"
+                },
+                {
+                  "name": "Accepted",
+                  "value": "Accepted"
+                },
+                {
+                  "name": "Override",
+                  "value": "Override"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "actual_outcome",
+              "displayName": "actual_outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "On time",
+                  "value": "On time"
+                },
+                {
+                  "name": "Delayed but completed",
+                  "value": "Delayed but completed"
+                },
+                {
+                  "name": "Rebooked",
+                  "value": "Rebooked"
+                },
+                {
+                  "name": "Failed crew change",
+                  "value": "Failed crew change"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "actual_delay_minutes",
+              "displayName": "actual_delay_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "crew_change_completed",
+              "displayName": "crew_change_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "additional_cost_eur",
+              "displayName": "additional_cost_eur",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "outcome_reason",
+              "displayName": "outcome_reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "No disruption",
+                  "value": "No disruption"
+                },
+                {
+                  "name": "Flight delay",
+                  "value": "Flight delay"
+                },
+                {
+                  "name": "Flight cancellation",
+                  "value": "Flight cancellation"
+                },
+                {
+                  "name": "Missed connection",
+                  "value": "Missed connection"
+                },
+                {
+                  "name": "Document issue",
+                  "value": "Document issue"
+                },
+                {
+                  "name": "Vessel ETA change",
+                  "value": "Vessel ETA change"
+                },
+                {
+                  "name": "Port transfer issue",
+                  "value": "Port transfer issue"
+                },
+                {
+                  "name": "Severe weather",
+                  "value": "Severe weather"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "destination_delay_risk_public",
+              "displayName": "destination_delay_risk_public",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "destination_delay_minutes_public",
+              "displayName": "destination_delay_minutes_public",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "live_operational_risk_score",
+              "displayName": "live_operational_risk_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "live_operational_risk_level",
+              "displayName": "live_operational_risk_level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "live_risk_reasons",
+              "displayName": "live_risk_reasons",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "live_weather_summary",
+              "displayName": "live_weather_summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "risk_assessed_at",
+              "displayName": "risk_assessed_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "assessment_status",
+              "displayName": "assessment_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "notion_report_url",
+              "displayName": "notion_report_url",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "ai_recommendation",
+              "displayName": "ai_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ai_recommendation_rationale",
+              "displayName": "ai_recommendation_rationale",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        272
+      ],
+      "id": "d97843a7-c8e1-4396-97d7-8a6f3ca21c63",
+      "name": "Update Airtable AI Assessment",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Q5WIJaIStPsdNnBz",
+          "name": "Andreas_Crew Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "pythonNative",
+        "pythonCode": "# Get the actual JSON data from the n8n item\ndata = _item[\"json\"]\n\n# Extract AI output and original Airtable fields\nai = data[\"output\"]\nfields = data[\"fields\"]\n\n\n# Build Markdown briefing\nbriefing = \"## Executive Assessment\\n\\n\"\nbriefing += ai[\"executive_assessment\"].strip()\n\nbriefing += \"\\n\\n## Key Risk Drivers\\n\\n\"\nfor risk in ai[\"key_risk_drivers\"]:\n    briefing += f\"- {risk.strip()}\\n\"\n\nbriefing += \"\\n## Recommended Actions\\n\\n\"\nfor index, action in enumerate(ai[\"recommended_actions\"], start=1):\n    briefing += f\"{index}. {action.strip()}\\n\"\n\nbriefing += \"\\n## AI Recommendation\\n\\n\"\nbriefing += ai[\"ai_recommendation\"].strip()\n\nbriefing += \"\\n\\n### Rationale\\n\\n\"\nbriefing += ai[\"recommendation_rationale\"].strip()\n\nbriefing += \"\\n\\n---\\n\\n### Assessment Limitation\\n\\n\"\nbriefing += ai[\"assessment_limitation\"].strip()\n\n\n# Return a clean dataset for Airtable and Notion\nreturn {\n    # Airtable record ID\n    \"id\": data[\"id\"],\n\n    # Operational context\n    \"crew_change_id\": fields[\"crew_change_id\"],\n    \"rank\": fields[\"rank\"],\n    \"live_operational_risk_score\": fields[\"live_operational_risk_score\"],\n    \"live_operational_risk_level\": fields[\"live_operational_risk_level\"],\n\n    # Full formatted Markdown briefing\n    \"ai_risk_briefing\": briefing,\n\n    # Individual structured AI outputs\n    \"ai_executive_assessment\": ai[\"executive_assessment\"].strip(),\n    \"ai_key_risk_drivers\": ai[\"key_risk_drivers\"],\n    \"ai_recommended_actions\": ai[\"recommended_actions\"],\n    \"ai_recommendation\": ai[\"ai_recommendation\"].strip(),\n    \"ai_recommendation_rationale\": ai[\"recommendation_rationale\"].strip(),\n    \"ai_assessment_limitation\": ai[\"assessment_limitation\"].strip()\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        336
+      ],
+      "id": "06866b19-295c-40ca-9e15-a13ba340717a",
+      "name": "Format the AI briefing"
+    },
+    {
+      "parameters": {
+        "pageId": {
+          "__rl": true,
+          "value": "3ce7d50e347c80169d75ebd382222199",
+          "mode": "id"
+        },
+        "title": "=Crew Change Risk Briefing - {{ $json.crew_change_id }}",
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "heading_1",
+              "textContent": "=AI Operational Risk Assessment"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "Executive Assessment"
+            },
+            {
+              "textContent": "={{ $json.ai_executive_assessment }}"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "Key Risk Drivers"
+            },
+            {
+              "type": "bulleted_list_item",
+              "textContent": "={{ $json.ai_key_risk_drivers.join('\\n') }}"
+            },
+            {
+              "type": "bulleted_list_item",
+              "textContent": "={{ $json.ai_key_risk_drivers[1] }}"
+            },
+            {
+              "type": "bulleted_list_item",
+              "textContent": "={{ $json.ai_key_risk_drivers[2] }}"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "Recommended Actions"
+            },
+            {
+              "type": "numbered_list_item",
+              "textContent": "={{ $json.ai_recommended_actions.join('\\n') }}"
+            },
+            {
+              "type": "numbered_list_item",
+              "textContent": "={{ $json.ai_recommended_actions[1] }}"
+            },
+            {
+              "type": "numbered_list_item",
+              "textContent": "={{ $json.ai_recommended_actions[2] }}"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "AI Recommendation"
+            },
+            {
+              "textContent": "={{ $json.ai_recommendation }}"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "Rationale"
+            },
+            {
+              "textContent": "={{ $json.ai_recommendation_rationale }}"
+            },
+            {
+              "type": "heading_2",
+              "textContent": "Assessment Limitation"
+            },
+            {
+              "textContent": "={{ $json.ai_assessment_limitation }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        464
+      ],
+      "id": "f75f9544-9d95-4f72-9ae1-21fc73bcea21",
+      "name": "Create a page",
+      "credentials": {
+        "notionApi": {
+          "id": "ZLXlubQRfGsMrluU",
+          "name": "Andreas_Crew_Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -160,
+        640
+      ],
+      "id": "530409ce-142d-4778-b049-ed66d1aa5147",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "Run Crew Change Analysis": {
+      "main": [
+        [
+          {
+            "node": "Crew Change Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crew Change Node": {
+      "main": [
+        [
+          {
+            "node": "Airport Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airport Node": {
+      "main": [
+        [
+          {
+            "node": "Weather Node open-meteo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Node open-meteo": {
+      "main": [
+        [
+          {
+            "node": "Build Risk Assessment Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Risk Assessment Input": {
+      "main": [
+        [
+          {
+            "node": "Calculate Live Operational Risk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Live Operational Risk": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format the AI briefing": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable AI Assessment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format the AI briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Basic LLM Chain": [
+      {
+        "output": {
+          "executive_assessment": "The operational risk level is classified as High, indicating significant concerns related to crew change operations.",
+          "key_risk_drivers": [
+            "Visa status pending verification",
+            "Ticket status is quoted but not confirmed",
+            "Arrival buffer below 4 hours"
+          ],
+          "recommended_actions": [
+            "Conduct a human review of visa status verification.",
+            "Confirm the ticket status to ensure travel arrangements are secured before proceeding.",
+            "Monitor the weather conditions closely during operations."
+          ],
+          "ai_recommendation": "Due to the high-risk assessment, a human review is highly recommended before proceeding further with the crew change operations.",
+          "recommendation_rationale": "The combination of pending visa verification, unconfirmed ticket status, and a close arrival buffer significantly increases the risk of complications during the crew change process.",
+          "assessment_limitation": "This assessment is based solely on the provided operational data and does not account for any external factors not disclosed."
+        }
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "00cafa1eb8a383ac595b6bbf54c5f8acd05d9d1462911bd4a0edac031509b829"
+  }
+}
