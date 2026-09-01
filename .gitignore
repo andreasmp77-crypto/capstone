@@ -1,3 +1,10 @@
 capstone-round1/langsmith/.env
 .env
 *.env
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.pytest_cache/
+Temp/
