@@ -5,24 +5,52 @@ W8D5_Project_5_Capstone
 - Course: AI Consulting & Integration 2026-07
 - Date: 2026-09-01
 '''
+# ============================================================
+# Crew Travel Copilot AI - LangSmith Monitoring Sample
+#
+# This script:
+# 1. Fetches selected crew-change cases from Airtable
+# 2. Sends each case to an OpenAI model for AI risk assessment
+# 3. Uses the same assessment prompt as the n8n workflow
+# 4. Sends traces to LangSmith for observability
+# 5. Captures latency and token usage for monitoring
+# ============================================================
+
 import os
 import json
 import requests
+
 from dotenv import load_dotenv
 from openai import OpenAI
 from langsmith import traceable
+from langsmith.wrappers import wrap_openai
 
-# Load variables from .env
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+# Load environment variables from the local .env file
 load_dotenv()
 
-# Create OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY")
+# Airtable configuration
+AIRTABLE_TOKEN = os.getenv("AIRTABLE_API_KEY")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 AIRTABLE_TABLE_NAME = os.getenv("AIRTABLE_TABLE_NAME")
 
-# The five cases selected for the LangSmith experiment
+# OpenAI configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# LangSmith configuration
+# These are read automatically by the LangSmith SDK from .env
+LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
+LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT")
+LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT")
+
+# Model used for this monitoring experiment
+MODEL = "gpt-5-nano"
+
+# Selected cases for the LangSmith monitoring experiment
 SELECTED_CASES = [
     "CC-0005",
     "CC-0007",
@@ -31,74 +59,118 @@ SELECTED_CASES = [
     "CC-0001",
 ]
 
-@traceable(
-    name="Fetch Crew Change Cases from Airtable",
-    run_type="tool"
+
+# ============================================================
+# CLIENT INITIALIZATION
+# ============================================================
+
+# Create the standard OpenAI client
+#
+# wrap_openai() automatically instruments OpenAI calls so
+# LangSmith can capture:
+# - LLM inputs and outputs
+# - model name
+# - latency
+# - token usage
+# - other available LLM metadata
+client = wrap_openai(
+    OpenAI(api_key=OPENAI_API_KEY)
 )
-def fetch_cases_from_airtable():
-    """Fetch all required crew change records from Airtable."""
 
-    url = (
-        f"https://api.airtable.com/v0/"
-        f"{AIRTABLE_BASE_ID}/"
-        f"{AIRTABLE_TABLE_NAME}"
-    )
 
+# ============================================================
+# AIRTABLE DATA RETRIEVAL
+# ============================================================
+
+@traceable(
+    name="Fetch Crew Change Cases",
+    run_type="chain"
+)
+def fetch_selected_cases():
+    """
+    Fetch the five selected crew-change cases directly from Airtable.
+    """
+
+    # Get Airtable configuration from environment variables
+    airtable_api_key = os.getenv("AIRTABLE_API_KEY")
+    base_id = os.getenv("AIRTABLE_BASE_ID")
+    table_name = os.getenv("AIRTABLE_TABLE_NAME")
+
+    # The five cases selected for the LangSmith monitoring experiment
+    selected_case_ids = [
+        "CC-0005",
+        "CC-0007",
+        "CC-0002",
+        "CC-0003",
+        "CC-0001",
+    ]
+
+    # Airtable API endpoint
+    url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
+
+    # Authentication headers
     headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}"
+        "Authorization": f"Bearer {airtable_api_key}"
     }
 
-    all_records = []
-    params = {}
+    # Build an Airtable formula to retrieve only the selected cases
+    formula = "OR(" + ",".join(
+        [
+            f"{{crew_change_id}}='{case_id}'"
+            for case_id in selected_case_ids
+        ]
+    ) + ")"
 
-    while True:
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+    # Send the request to Airtable
+    response = requests.get(
+        url,
+        headers=headers,
+        params={
+            "filterByFormula": formula
+        },
+        timeout=30
+    )
 
-        data = response.json()
-        all_records.extend(data.get("records", []))
+    # Raise an error if the Airtable request fails
+    response.raise_for_status()
 
-        # Airtable returns an offset when more pages exist
-        if "offset" in data:
-            params["offset"] = data["offset"]
-        else:
-            break
+    # Extract records from the Airtable response
+    records = response.json().get("records", [])
 
-    # Keep only our five selected cases
-    selected_records = []
+    # Sort records according to our intended test order
+    records.sort(
+        key=lambda record: selected_case_ids.index(
+            record["fields"].get("crew_change_id")
+        )
+    )
 
-    for record in all_records:
-        fields = record.get("fields", {})
+    return records
 
-        if fields.get("crew_change_id") in SELECTED_CASES:
-            selected_records.append({
-                "record_id": record["id"],
-                "crew_change_id": fields.get("crew_change_id"),
-                "fields": fields
-            })
-
-    return selected_records
-
-
-# AI Risk Briefing function
+# ============================================================
+# AI RISK BRIEFING GENERATION
+# ============================================================
 
 @traceable(
     name="Generate AI Risk Briefing",
-    run_type="llm"
+    run_type="chain"
 )
-def generate_ai_briefing(case, model="gpt-5-nano"):
+def generate_ai_briefing(case, model=MODEL):
     """
     Generate an AI operational risk briefing.
 
     Uses the same prompt and assessment logic as the
     existing n8n Crew Travel Copilot workflow.
+
+    The function itself is traced as a LangSmith "chain".
+    The wrapped OpenAI call inside it is automatically
+    captured as a nested LLM trace.
     """
 
-    # Extract the Airtable fields dictionary from the selected case
+    # Extract operational fields from the Airtable record
     fields = case["fields"]
 
-    # Build the prompt dynamically using the operational data
-    # retrieved from Airtable
+    # Build the prompt dynamically using Airtable data
+    # This mirrors the prompt used in the n8n workflow
     prompt = f"""
 You are an AI Operational Risk Analyst supporting maritime crew change operations.
 
@@ -162,7 +234,11 @@ The JSON output must contain exactly these fields:
 }}
 """
 
-    # Send the prompt to the selected OpenAI model
+    # Send the prompt to OpenAI
+    #
+    # Because the client is wrapped with wrap_openai(),
+    # LangSmith should automatically capture this as an
+    # LLM child run including token usage.
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -172,37 +248,161 @@ The JSON output must contain exactly these fields:
             }
         ],
 
-        # Request a valid JSON object rather than free-form text
-        response_format={"type": "json_object"},
+        # Force the response to be valid JSON
+        response_format={
+            "type": "json_object"
+        },
     )
 
-    # Convert the JSON text returned by the model into a Python dictionary
-    return json.loads(response.choices[0].message.content)
+    # Convert the JSON response text into a Python dictionary
+    briefing = json.loads(
+        response.choices[0].message.content
+    )
 
-# --------------------------------------------------
-# TEST: Airtable retrieval + one OpenAI model call
-# --------------------------------------------------
+    # Extract token usage directly from the OpenAI API response
+    token_usage = {
+        "input_tokens": response.usage.prompt_tokens,
+        "output_tokens": response.usage.completion_tokens,
+        "total_tokens": response.usage.total_tokens,
+    }
 
-print("\nFetching selected crew-change cases from Airtable...\n")
+    # Return both the AI assessment and token usage
+    return {
+        "briefing": briefing,
+        "token_usage": token_usage,
+    }
 
-# Retrieve the five selected cases from Airtable
-cases = fetch_cases_from_airtable()
 
-print(f"Found {len(cases)} selected cases.")
+# ============================================================
+# MAIN EXPERIMENT
+# ============================================================
 
-# Use only the first case for this initial connectivity test
-test_case = cases[0]
+def main():
+    """
+    Run the complete LangSmith monitoring experiment.
+    """
 
-print(f"\nTesting AI briefing for: {test_case['crew_change_id']}")
-print("Model: gpt-5-nano\n")
+    # Retrieve selected crew-change cases from Airtable
+    cases = fetch_selected_cases()
 
-# Generate the structured AI risk briefing
-result = generate_ai_briefing(
-    test_case,
-    model="gpt-5-nano"
-)
+    print(f"\nFound {len(cases)} selected cases.\n")
 
-# Print the structured result in a readable JSON format
-print(json.dumps(result, indent=2))
+    # Store all experiment results
+    all_results = []
 
-print("\nSingle-model AI test completed successfully.")
+    # Process each crew-change case individually
+    for case in cases:
+
+        # Extract crew change ID for display and reporting
+        crew_change_id = case["fields"].get(
+            "crew_change_id",
+            "Unknown"
+        )
+
+        print("=" * 60)
+        print(f"Testing AI briefing for: {crew_change_id}")
+        print(f"Model: {MODEL}")
+        print("=" * 60)
+
+        # Generate AI risk briefing
+        result = generate_ai_briefing(
+            case,
+            model=MODEL
+        )
+
+        # Separate the briefing from token usage
+        briefing = result["briefing"]
+        token_usage = result["token_usage"]
+
+        # Print token usage immediately for each case
+        print(
+            f"Input tokens: "
+            f"{token_usage['input_tokens']}"
+        )
+        print(
+            f"Output tokens: "
+            f"{token_usage['output_tokens']}"
+        )
+        print(
+            f"Total tokens: "
+            f"{token_usage['total_tokens']}"
+        )
+
+        # Print the AI assessment
+        print("\nAI RISK BRIEFING:")
+        print(
+            json.dumps(
+                briefing,
+                indent=2
+            )
+        )
+
+        # Store the complete result for final summary
+        all_results.append({
+            "crew_change_id": crew_change_id,
+            "model": MODEL,
+            "briefing": briefing,
+            "token_usage": token_usage,
+        })
+
+        print()
+
+    # ========================================================
+    # EXPERIMENT SUMMARY
+    # ========================================================
+
+    print("=" * 60)
+    print("LANGSMITH MONITORING EXPERIMENT COMPLETED")
+    print("=" * 60)
+
+    print(f"Cases tested: {len(all_results)}")
+    print(f"Model tested: {MODEL}")
+
+    print("\nCASE SUMMARY:")
+
+    # Initialise counters for aggregate token consumption
+    total_input_tokens = 0
+    total_output_tokens = 0
+    total_tokens = 0
+
+    # Display each case and accumulate token totals
+    for item in all_results:
+
+        usage = item["token_usage"]
+
+        total_input_tokens += usage["input_tokens"]
+        total_output_tokens += usage["output_tokens"]
+        total_tokens += usage["total_tokens"]
+
+        print(
+            f"- {item['crew_change_id']} | "
+            f"{item['model']} | "
+            f"Input: {usage['input_tokens']} | "
+            f"Output: {usage['output_tokens']} | "
+            f"Total: {usage['total_tokens']}"
+        )
+
+    # Display total token consumption across all test cases
+    print("\nEXPERIMENT TOKEN SUMMARY:")
+    print(
+        f"Total input tokens: "
+        f"{total_input_tokens}"
+    )
+    print(
+        f"Total output tokens: "
+        f"{total_output_tokens}"
+    )
+    print(
+        f"Total tokens consumed: "
+        f"{total_tokens}"
+    )
+
+    print("\nAll AI briefing tests completed successfully.")
+
+
+# ============================================================
+# SCRIPT ENTRY POINT
+# ============================================================
+
+if __name__ == "__main__":
+    main()
