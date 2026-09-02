@@ -112,90 +112,106 @@ The research approach follows the principle:
 
 > **Industry evidence → Operational pain point → User need → User story**
 
-IMO highlights that effective crew changes are important for preventing fatigue and protecting seafarers' health, safety and wellbeing. Crew changes also involve a complex ecosystem of shipping companies, agents, ports, airports, airlines and national authorities. :contentReference[oaicite:0]{index=0}
+## Sprint and Deliverable Alignment
 
-Maritime industry discussions also highlight the potential of **Management by Exception**, where routine processes are monitored while anomalies and deviations are brought to human attention. This approach is particularly relevant to complex ship-management environments with significant manual monitoring requirements. :contentReference[oaicite:1]{index=1}
+The user stories are grouped into delivery stages to keep the initial scope narrow while providing a clear backlog for future sprints.
 
-## Core User Stories
+| Sprint / Stage | User Stories | Deliverable Supported |
+|---|---|---|
+| **Sprint 1 — Risk Detection** | US-01 | Core n8n risk assessment POC |
+| **Sprint 2 — Explainability & Briefing** | US-02, US-03 | AI risk briefing and structured output |
+| **Sprint 3 — MVP User Experience** | US-04, US-05 | Future MVP UI and human-in-the-loop workflow |
+| **Sprint 4 — Monitoring & Governance** | US-06 | LangSmith monitoring and logging |
+| **Future Sprint** | US-07, US-08 | Management insights and welfare enhancement |
 
-### US-01 — Identify Priority Cases
+This sequence supports a focused development path: **identify → explain → brief → review → monitor → extend**.
 
-> **As a Crew Manager, I want to identify upcoming crew changes with potential risk indicators, so that I can prioritise cases requiring earlier attention.**
+## User Stories
 
-**Value:** Supports management by exception by helping users focus their attention on potentially problematic cases rather than manually reviewing every crew change.
+### US-01 — Assign a Risk Level
 
----
+> **As a Crew Manager, I want upcoming crew changes to be assigned a risk level based on defined operational indicators, so that I can identify which cases need attention first.**
 
-### US-02 — Understand Why a Case Was Flagged
-
-> **As a Crew Manager, I want to understand the factors that contributed to a risk flag, so that I can assess the situation and make an informed decision.**
-
-**Value:** Supports transparency and reduces the risk of treating an AI-generated result as an unexplained recommendation.
-
----
-
-### US-03 — Review Relevant Information
-
-> **As a Crew Manager, I want to access the relevant operational information for a flagged crew change in one place, so that I can assess the situation without manually searching across multiple sources.**
-
-**Value:** Reduces information fragmentation and manual effort during operational decision-making.
+**Sprint:** Sprint 1 — Risk Detection  
+**Supports:** n8n risk assessment POC
 
 ---
 
-### US-04 — Receive an Operational Risk Briefing
+### US-02 — See the Main Risk Drivers
 
-> **As a Crew Manager, I want a concise summary of upcoming crew-change risks and exceptions, so that I can quickly understand the overall operational situation.**
+> **As a Crew Manager, I want to see the main factors that caused a crew change to be flagged, so that I can quickly understand what requires attention.**
 
-**Value:** Helps users gain situational awareness and focus on the most relevant operational issues.
-
----
-
-### US-05 — Maintain Human Control
-
-> **As a Crew Manager, I want AI insights to support rather than replace my professional judgement, so that I retain responsibility for operational decisions.**
-
-**Value:** Maintains a human-in-the-loop approach. The system provides decision support but does not autonomously make operational decisions.
+**Sprint:** Sprint 2 — Explainability & Briefing  
+**Supports:** AI risk explanation and structured output
 
 ---
 
-### US-06 — Monitor Operational Trends
+### US-03 — Receive a Concise Risk Briefing
 
-> **As an Operations Manager, I want to view crew-change risk patterns and trends, so that I can identify recurring issues and support better operational planning.**
+> **As a Crew Manager, I want a concise briefing for a flagged crew change, so that I can understand the situation and recommended next actions without reviewing all raw data manually.**
 
-**Value:** Provides management visibility beyond individual crew-change cases and supports identification of recurring operational patterns.
-
----
-
-### US-07 — Monitor System Behaviour
-
-> **As a System Administrator or Operations Manager, I want system inputs and outputs to be logged and monitored, so that unexpected results can be investigated and system performance can be reviewed.**
-
-**Value:** Supports transparency, traceability and ongoing monitoring of the AI-supported system.
+**Sprint:** Sprint 2 — Explainability & Briefing  
+**Supports:** n8n AI-generated risk briefing
 
 ---
 
-### US-08 — Support Crew Welfare Awareness
+### US-04 — Review a Flagged Case in One Place
 
-> **As a Crew Manager, I want potential crew-change disruptions that could affect planned crew relief to be highlighted, so that I can review situations that may require action to support crew welfare and operational continuity.**
+> **As a Crew Manager, I want to review the crew-change details, risk level and AI briefing together, so that I can assess a flagged case without switching between multiple sources.**
 
-**Value:** Recognises that crew changes are not only a logistical process but can also affect fatigue, wellbeing and safe vessel operations.
+**Sprint:** Sprint 3 — MVP User Experience  
+**Supports:** Future MVP UI / risk review screen
 
-## Initial Prioritisation
+---
 
-| Priority | User Stories |
-|---|---|
-| **Core POC / MVP** | US-01, US-02, US-03, US-04 |
-| **Governance & Trust** | US-05, US-07 |
-| **Management / Future Enhancement** | US-06 |
-| **Future Enhancement** | US-08 |
+### US-05 — Maintain Human Decision Ownership
 
-This prioritisation keeps the initial solution focused while providing a clear path for future development.
+> **As a Crew Manager, I want the system to clearly indicate when human review is required, so that I remain responsible for the final operational decision.**
+
+**Sprint:** Sprint 3 — MVP User Experience  
+**Supports:** Human-in-the-loop workflow
+
+---
+
+### US-06 — Monitor System Behaviour
+
+> **As an Operations Manager or System Administrator, I want system inputs and outputs to be logged and monitored, so that unexpected results can be investigated and system performance can be reviewed.**
+
+**Sprint:** Sprint 4 — Monitoring & Governance  
+**Supports:** LangSmith monitoring, logging and traceability
+
+---
+
+### US-07 — View Recurring Risk Patterns
+
+> **As an Operations Manager, I want to view recurring crew-change risk patterns over time, so that I can identify operational bottlenecks and support planning decisions.**
+
+**Sprint:** Future Sprint  
+**Supports:** Future management dashboard and analytics
+
+---
+
+### US-08 — Highlight Potential Welfare Impact
+
+> **As a Crew Manager, I want potential crew-change disruptions that may affect planned crew relief to be highlighted, so that I can review whether additional action may be needed to support crew welfare and operational continuity.**
+
+**Sprint:** Future Sprint  
+**Supports:** Future crew welfare enhancement
+
+## Prioritisation
+
+| Priority | User Stories | Purpose |
+|---|---|---|
+| **Core POC** | US-01, US-02, US-03 | Demonstrate risk detection, explanation and briefing |
+| **Future MVP** | US-04, US-05 | Add a focused human-in-the-loop user experience |
+| **Monitoring & Governance** | US-06 | Provide observability and traceability |
+| **Future Enhancements** | US-07, US-08 | Extend into management insights and welfare support |
+
+This prioritisation deliberately keeps the first implementation narrow while ensuring that the user stories form a usable backlog for future sprints.
 
 ## Research Sources
 
 The user stories were informed by a combination of publicly available industry research, regulatory guidance, professional maritime resources and personal professional experience in the maritime and shipping industry.
-
-The following sources were reviewed to identify recurring challenges relating to crew changes, seafarer welfare, operational disruption, ship management, digitalisation, risk monitoring and human-in-the-loop decision support.
 
 ### International Regulatory and Industry Organisations
 
@@ -231,8 +247,6 @@ Examples include:
 ### Research Approach
 
 The sources were not used as a formal academic literature review. Instead, they were used to identify and validate recurring industry challenges and operational needs.
-
-The research process followed the framework:
 
 > **Industry evidence → Operational pain point → User need → User story**
 
