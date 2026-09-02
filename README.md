@@ -91,9 +91,9 @@ The system is not intended to:
 ## 3. Project Structure
 
 ```
+README.md
 capstone-round1/
 │
-├── README.md
 │
 ├── data/
 │   ├── raw/
@@ -176,3 +176,10 @@ Review the indicative implementation cost and proposed project timeline.
 
 Contains the Round 1 review and project decision documentation.
 
+## Attribution and Use
+
+This project was created by Andreas Papachristophorou as part of an AI Consulting & Integration Capstone Project.
+
+If you reuse, adapt, or build upon this work, please retain appropriate attribution to the original author and reference this repository where reasonably possible.
+
+Third-party data, software, APIs and external resources remain subject to their respective licenses and terms of use.
